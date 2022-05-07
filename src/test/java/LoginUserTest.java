@@ -1,5 +1,6 @@
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,14 +11,15 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class LoginUserTest {
     UserClient userClient;
-    User user = new User();
-    String email = "mir@mail.ru";
-    String userPassword = "1234567";
+    User user;
+    String email = RandomStringUtils.randomAlphabetic(10)+"@gmail.com";
+    String userPassword = RandomStringUtils.randomNumeric(7);
+    String userFirstName = RandomStringUtils.randomAlphabetic(10);
 
     @Before
     public void setUp() {
         userClient = new UserClient();
-        user = new User(email, userPassword, "Germiona", "");
+        user = new User(email, userPassword, userFirstName, "");
         userClient.create(user);
     }
 

@@ -2,10 +2,13 @@
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 
+import java.util.HashMap;
+
 import static io.restassured.RestAssured.given;
 
 public class UserClient extends RestClient {
     private static final String USER_PATH = "/api/auth";
+
     @Step("User login")
     public ValidatableResponse login(UserCredentials credentials){
         return given()
@@ -22,13 +25,15 @@ public class UserClient extends RestClient {
         String userEmail = user.getEmail();
         String userPassword = user.getPassword();
 
-        String registerRequestBody = "{\"email\":\"" + userEmail + "\","
-                + "\"password\":\"" + userPassword + "\","
-                + "\"name\":\"" + userFirstName + "\"}";
+        HashMap<String,Object> dataBody = new HashMap<String,Object>();
+
+        dataBody.put("email", userEmail);
+        dataBody.put("password", userPassword);
+        dataBody.put("name", userFirstName);
 
         return given()
                 .spec(getBaseSpec())
-                .body(registerRequestBody)
+                .body(dataBody)
                 .when()
                 .post(USER_PATH + "/register")
                 .then();
@@ -39,22 +44,22 @@ public class UserClient extends RestClient {
          given()
                 .spec(getBaseSpec())
                 .auth().oauth2(user.getAccessToken())
-                .body(user)
                 .when()
                 .delete(USER_PATH +  "/user")
                 .then();
-                 /*.statusCode(202); в этом месте проблема. Если добавить эту строку, то после удаления юзера получаю ошибку Expected status code <202> but was <403>.
-                 Что-то некорректно удаляется, подозреваю, что проблема связана с user.getAccessToken(). Хэлп плиз!..
-                  */
     }
 
     @Step("User changing without authorisation")
     public ValidatableResponse changingWithoutAuthorisation (User user){
+        HashMap<String,Object> dataBody = new HashMap<String,Object>();
 
-        String changeRequestBody = "{\"email\": \"123@mail.ru\", \"password\": \"12345678\",\"name\": \"name\"}";
+        dataBody.put("email", "123@mail.ru");
+        dataBody.put("password", "12345678");
+        dataBody.put("name", "name");
+
         return given()
                 .spec(getBaseSpec())
-                .body(changeRequestBody)
+                .body(dataBody)
                 .when()
                 .patch(USER_PATH +  "/user")
                 .then();
@@ -63,11 +68,16 @@ public class UserClient extends RestClient {
     @Step("User changing with authorisation")
     public ValidatableResponse changingWithAuthorisation (User user){
 
-        String changeRequestBody = "{\"email\": \"123@mail.ru\", \"password\": \"12345678\",\"name\": \"name\"}";
+        HashMap<String,Object> dataBody = new HashMap<String,Object>();
+
+        dataBody.put("email", "123@mail.ru");
+        dataBody.put("password", "12345678");
+        dataBody.put("name", "name");
+
         return given()
                 .spec(getBaseSpec())
                 .auth().oauth2(user.getAccessToken())
-                .body(changeRequestBody)
+                .body(dataBody)
                 .when()
                 .patch(USER_PATH +  "/user")
                 .then();
@@ -92,7 +102,6 @@ public class UserClient extends RestClient {
                 .post("/api/orders")
                 .then();
     }
-
 
     @Step("Order order list getting")
     public OrderList orderListGetting () {

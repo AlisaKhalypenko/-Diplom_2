@@ -1,5 +1,5 @@
 
-public class User extends RestClient{
+public class User {
     public String firstName;
     public String email;
     public String password;

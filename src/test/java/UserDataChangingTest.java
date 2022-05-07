@@ -10,11 +10,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class UserDataChangingTest {
     UserClient userClient;
-    User user = new User();
+    User user;
     String userEmail = RandomStringUtils.randomAlphabetic(10)+"@gmail.com";
     String userPassword = RandomStringUtils.randomNumeric(7);
     String userFirstName = RandomStringUtils.randomAlphabetic(10 );
     String accessToken;
+    ValidatableResponse loginResponse;
 
     @Before
     public void setUp() {
@@ -25,15 +26,16 @@ public class UserDataChangingTest {
 
     @After
     public void tearDown(){
+        String accessTokenExtract = loginResponse.extract().path("accessToken");
+        accessToken = accessTokenExtract.replace("Bearer ", "");
+        user.setAccessToken(accessToken);
         userClient.delete(user);
     }
 
     @Test
     @DisplayName("User data changing without authorisation")
     public void userDataChangingWithoutAuthorisation() {
-        ValidatableResponse loginResponse = userClient.login(new UserCredentials(userEmail, userPassword));
-        accessToken = loginResponse.extract().path("accessToken");
-        user.setAccessToken(accessToken);
+        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
         ValidatableResponse changingResponse = userClient.changingWithoutAuthorisation(user);
 
         int statusCode = changingResponse.extract().statusCode();
@@ -43,12 +45,13 @@ public class UserDataChangingTest {
         assertThat("Message if cannot change data", message, equalTo("You should be authorised"));
     }
 
-    //этот тест не проходит, заказ не создаётся, статус код 403. что-то не то с передачей accessToken?
+    //всё ещё не проходит((, статус код 403.
     @Test
     @DisplayName("User data changing with authorisation")
     public void userDataChangingWithAuthorisation() {
-        ValidatableResponse loginResponse = userClient.login(new UserCredentials(userEmail, userPassword));
-        accessToken = loginResponse.extract().path("accessToken");
+        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
+        String accessTokenExtract = loginResponse.extract().path("accessToken");
+        accessToken = accessTokenExtract.replace("Bearer ", "");
         user.setAccessToken(accessToken);
         ValidatableResponse changingResponse = userClient.changingWithAuthorisation(user);
 

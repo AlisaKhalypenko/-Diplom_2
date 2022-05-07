@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.not;
 
 public class OrderListTest {
     UserClient userClient;
-    User user = new User();
+    User user;
     String email = "mir@mail.ru";
     String userPassword = "1234567";
     Order order;
