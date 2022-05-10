@@ -21,21 +21,20 @@ public class UserDataChangingTest {
     public void setUp() {
         userClient = new UserClient();
         user = new User(userEmail, userPassword, userFirstName, accessToken);
-        userClient.create(user);
+        ValidatableResponse createResponse = userClient.create(user);
+        String accessTokenExtract = createResponse.extract().path("accessToken");
+        accessToken = accessTokenExtract.replace("Bearer ", "");
+        user.setAccessToken(accessToken);
     }
 
     @After
     public void tearDown(){
-        String accessTokenExtract = loginResponse.extract().path("accessToken");
-        accessToken = accessTokenExtract.replace("Bearer ", "");
-        user.setAccessToken(accessToken);
         userClient.delete(user);
     }
 
     @Test
     @DisplayName("User data changing without authorisation")
     public void userDataChangingWithoutAuthorisation() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
         ValidatableResponse changingResponse = userClient.changingWithoutAuthorisation(user);
 
         int statusCode = changingResponse.extract().statusCode();
@@ -45,14 +44,11 @@ public class UserDataChangingTest {
         assertThat("Message if cannot change data", message, equalTo("You should be authorised"));
     }
 
-    //всё ещё не проходит((, статус код 403.
+    // побеждён))
     @Test
     @DisplayName("User data changing with authorisation")
     public void userDataChangingWithAuthorisation() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        String accessTokenExtract = loginResponse.extract().path("accessToken");
-        accessToken = accessTokenExtract.replace("Bearer ", "");
-        user.setAccessToken(accessToken);
+        loginResponse = userClient.login(new UserCredentials(userEmail, userPassword));
         ValidatableResponse changingResponse = userClient.changingWithAuthorisation(user);
 
         int statusCode = changingResponse.extract().statusCode();

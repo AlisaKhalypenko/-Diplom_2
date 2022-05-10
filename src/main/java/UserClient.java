@@ -25,7 +25,7 @@ public class UserClient extends RestClient {
         String userEmail = user.getEmail();
         String userPassword = user.getPassword();
 
-        HashMap<String,Object> dataBody = new HashMap<String,Object>();
+        HashMap<String,String> dataBody = new HashMap<String,String>();
 
         dataBody.put("email", userEmail);
         dataBody.put("password", userPassword);
@@ -51,11 +51,15 @@ public class UserClient extends RestClient {
 
     @Step("User changing without authorisation")
     public ValidatableResponse changingWithoutAuthorisation (User user){
-        HashMap<String,Object> dataBody = new HashMap<String,Object>();
+        String userFirstName = user.getFirstName();
+        String userEmail = user.getEmail();
+        String userPassword = user.getPassword();
 
-        dataBody.put("email", "123@mail.ru");
-        dataBody.put("password", "12345678");
-        dataBody.put("name", "name");
+        HashMap<String,String> dataBody = new HashMap<String,String>();
+
+        dataBody.put("email", userEmail);
+        dataBody.put("password", userPassword);
+        dataBody.put("name", userFirstName);
 
         return given()
                 .spec(getBaseSpec())
@@ -68,11 +72,15 @@ public class UserClient extends RestClient {
     @Step("User changing with authorisation")
     public ValidatableResponse changingWithAuthorisation (User user){
 
-        HashMap<String,Object> dataBody = new HashMap<String,Object>();
+        String userFirstName = user.getFirstName();
+        String userEmail = user.getEmail();
+        String userPassword = user.getPassword();
 
-        dataBody.put("email", "123@mail.ru");
-        dataBody.put("password", "12345678");
-        dataBody.put("name", "name");
+        HashMap<String,String> dataBody = new HashMap<String,String>();
+
+        dataBody.put("email", userEmail);
+        dataBody.put("password", userPassword);
+        dataBody.put("name", userFirstName);
 
         return given()
                 .spec(getBaseSpec())
@@ -81,45 +89,6 @@ public class UserClient extends RestClient {
                 .when()
                 .patch(USER_PATH +  "/user")
                 .then();
-    }
-     @Step("Order creating without authorisation")
-    public ValidatableResponse orderCreating (Order order) {
-        return given()
-                .spec(getBaseSpec())
-                .body(order)
-                .when()
-                .post("/api/orders")
-                .then();
-    }
-
-    @Step("Order creating with authorisation")
-    public ValidatableResponse orderCreatingWithAuthorisation (Order order, User user) {
-        return given()
-                .spec(getBaseSpec())
-                .auth().oauth2(user.getAccessToken())
-                .body(order)
-                .when()
-                .post("/api/orders")
-                .then();
-    }
-
-    @Step("Order order list getting")
-    public OrderList orderListGetting () {
-        return given()
-                .spec(getBaseSpec())
-                .when()
-                .get("/api/orders")
-                .body().as(OrderList.class);
-    }
-
-    @Step("Order order list getting by authorised user")
-    public OrderList orderListGettingByAuthorisedUser (User user) {
-        return given()
-                .spec(getBaseSpec())
-                .auth().oauth2(user.getAccessToken())
-                .when()
-                .get("/api/orders")
-                .body().as(OrderList.class);
     }
 
 }

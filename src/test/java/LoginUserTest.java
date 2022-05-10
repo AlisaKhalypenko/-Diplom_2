@@ -15,12 +15,18 @@ public class LoginUserTest {
     String email = RandomStringUtils.randomAlphabetic(10)+"@gmail.com";
     String userPassword = RandomStringUtils.randomNumeric(7);
     String userFirstName = RandomStringUtils.randomAlphabetic(10);
+    String incorrectEmail = RandomStringUtils.randomAlphabetic(5)+"@gmail.com";
+    String incorrectPassword = RandomStringUtils.randomNumeric(6);
+    String accessToken;
 
     @Before
     public void setUp() {
         userClient = new UserClient();
-        user = new User(email, userPassword, userFirstName, "");
-        userClient.create(user);
+        user = new User(email, userPassword, userFirstName, accessToken);
+        ValidatableResponse createResponse = userClient.create(user);
+        String accessTokenExtract = createResponse.extract().path("accessToken");
+        accessToken = accessTokenExtract.replace("Bearer ", "");
+        user.setAccessToken(accessToken);
     }
 
     @After
@@ -30,8 +36,8 @@ public class LoginUserTest {
 
     @Test
     @DisplayName("User can login with valid credentials")
-    public void courierCanLoginWithValidCredentials() {
-        ValidatableResponse loginResponse = userClient.login(new UserCredentials(user.email, user.password));
+    public void userCanLoginWithValidCredentials() {
+        ValidatableResponse loginResponse = userClient.login(new UserCredentials(email, userPassword));
         int statusCode = loginResponse.extract().statusCode();
         boolean success = loginResponse.extract().path("success");
 
@@ -41,8 +47,8 @@ public class LoginUserTest {
 
     @Test
     @DisplayName("User cannot login with incorrect email")
-    public void courierCannotLoginWithIncorrectLogin() {
-        ValidatableResponse loginResponse = userClient.login(new UserCredentials("s@bhh.kk", user.password));
+    public void userCannotLoginWithIncorrectLogin() {
+        ValidatableResponse loginResponse = userClient.login(new UserCredentials(incorrectEmail, userPassword));
         int statusCode = loginResponse.extract().statusCode();
         String message = loginResponse.extract().path("message");
 
@@ -52,8 +58,8 @@ public class LoginUserTest {
 
     @Test
     @DisplayName("User cannot login with incorrect password")
-    public void courierCannotLoginWithIncorrectPassword() {
-        ValidatableResponse loginResponse = userClient.login(new UserCredentials(user.email, "hjnvb"));
+    public void userCannotLoginWithIncorrectPassword() {
+        ValidatableResponse loginResponse = userClient.login(new UserCredentials(email, incorrectPassword));
         int statusCode = loginResponse.extract().statusCode();
         String message = loginResponse.extract().path("message");
 

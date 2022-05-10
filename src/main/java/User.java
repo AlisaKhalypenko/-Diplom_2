@@ -1,9 +1,9 @@
 
 public class User {
-    public String firstName;
-    public String email;
-    public String password;
-    public String accessToken;
+    private String firstName;
+    private String email;
+    private String password;
+    private String accessToken;
 
     public User(){
     }

@@ -1,7 +1,7 @@
 import java.util.List;
 
 public class Orders {
-    public List<String> ingredients;
+    private List<String> ingredients;
     private String _id;
     private String status;
     private int number;

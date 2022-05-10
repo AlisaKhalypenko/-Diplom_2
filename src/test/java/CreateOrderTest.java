@@ -13,41 +13,42 @@ import static org.hamcrest.Matchers.*;
 
 public class CreateOrderTest {
     UserClient userClient;
+    OrderClient orderClient;
     User user;
+    Order order;
     String email = RandomStringUtils.randomAlphabetic(10)+"@gmail.com";;
     String userPassword = RandomStringUtils.randomAlphabetic(10);
     String userFirstName = RandomStringUtils.randomAlphabetic(10);
-    Order order;
     List<String> ingredients = new ArrayList<>();
     String accessToken;
-    ValidatableResponse loginResponse;
+    String ingredient = "61c0c5a71d1f82001bdaaa6d";
+    String incorrectIngredient = "61c0c5a71d1f82001bdaaa";
 
     @Before
     public void setUp() {
         userClient = new UserClient();
+        orderClient = new OrderClient();
         order = new Order(ingredients);
         user = new User(email, userPassword, userFirstName, accessToken);
-        userClient.create(user);
+        ValidatableResponse createResponse = userClient.create(user);
+        String accessTokenExtract = createResponse.extract().path("accessToken");
+        accessToken = accessTokenExtract.replace("Bearer ", "");
+        user.setAccessToken(accessToken);
     }
 
     @After
     public void tearDown(){
-        String accessTokenExtract = loginResponse.extract().path("accessToken");
-        accessToken = accessTokenExtract.replace("Bearer ", "");
-        user.setAccessToken(accessToken);
-        userClient.delete(user);
+        if( accessToken != null){
+            userClient.delete(user);
+        }
     }
 
     //Та-даам! ))) тест прошёл
     @Test
     @DisplayName("Order was created with authorisation")
     public void orderWasCreatedWithAuthorisation() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        ingredients.add("61c0c5a71d1f82001bdaaa6d");
-        String accessTokenExtract = loginResponse.extract().path("accessToken");
-        accessToken = accessTokenExtract.replace("Bearer ", "");
-        user.setAccessToken(accessToken);
-        ValidatableResponse orderCreated = userClient.orderCreatingWithAuthorisation(order, user);
+        ingredients.add(ingredient);
+        ValidatableResponse orderCreated = orderClient.orderCreatingWithAuthorisation(order, user);
         int statusCode = orderCreated.extract().statusCode();
         boolean success = orderCreated.extract().path("success");
 
@@ -58,9 +59,8 @@ public class CreateOrderTest {
     @Test
     @DisplayName("Order was created without authorisation")
     public void orderWasCreatedWithoutAuthorisation() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        ingredients.add("61c0c5a71d1f82001bdaaa6d");
-        ValidatableResponse orderCreated = userClient.orderCreating(order);
+        ingredients.add(ingredient);
+        ValidatableResponse orderCreated = orderClient.orderCreating(order);
         int statusCode = orderCreated.extract().statusCode();
         boolean success = orderCreated.extract().path("success");
 
@@ -71,9 +71,8 @@ public class CreateOrderTest {
     @Test
     @DisplayName("Order with ingredients")
     public void orderWithIngredients() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        ingredients.add("61c0c5a71d1f82001bdaaa6d");
-        ValidatableResponse orderCreated = userClient.orderCreating(order);
+        ingredients.add(ingredient);
+        ValidatableResponse orderCreated = orderClient.orderCreating(order);
         int statusCode = orderCreated.extract().statusCode();
         boolean success = orderCreated.extract().path("success");
 
@@ -84,8 +83,7 @@ public class CreateOrderTest {
     @Test
     @DisplayName("Order without ingredients")
     public void orderWithoutIngredients() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        ValidatableResponse orderCreated = userClient.orderCreating(order);
+        ValidatableResponse orderCreated = orderClient.orderCreating(order);
         int statusCode = orderCreated.extract().statusCode();
         String message = orderCreated.extract().path("message");
 
@@ -96,9 +94,8 @@ public class CreateOrderTest {
     @Test
     @DisplayName("Order with incorrect hash")
     public void orderWithIncorrectHash() {
-        loginResponse = userClient.login(new UserCredentials(user.email, user.password));
-        ingredients.add("61c0c5a71d1f82001bdaaad");
-        ValidatableResponse orderCreated = userClient.orderCreating(order);
+        ingredients.add(incorrectIngredient);
+        ValidatableResponse orderCreated = orderClient.orderCreating(order);
         int statusCode = orderCreated.extract().statusCode();
 
         assertThat("Internal Server Error", statusCode, equalTo(500));
