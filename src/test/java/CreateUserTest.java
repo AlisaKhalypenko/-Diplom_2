@@ -66,6 +66,11 @@ public class CreateUserTest {
         ValidatableResponse createResponse = userClient.create(new User(userEmail, "", userFirstName, accessToken));
         int statusCode = createResponse.extract().statusCode();
         String message = createResponse.extract().path("message");
+        if(statusCode == 200){
+            String accessTokenExtract = createResponse.extract().path("accessToken");
+            accessToken = accessTokenExtract.replace("Bearer ", "");
+            user.setAccessToken(accessToken);
+        }
 
         assertThat("User hasn't created", statusCode, equalTo(403));
         assertThat("Message if cannot create", message, equalTo("Email, password and name are required fields"));
@@ -77,6 +82,11 @@ public class CreateUserTest {
         ValidatableResponse createResponse = userClient.create(new User("", userPassword, userFirstName, accessToken));
         int statusCode = createResponse.extract().statusCode();
         String message = createResponse.extract().path("message");
+        if(statusCode == 200){
+            String accessTokenExtract = createResponse.extract().path("accessToken");
+            accessToken = accessTokenExtract.replace("Bearer ", "");
+            user.setAccessToken(accessToken);
+        }
 
         assertThat("User hasn't created", statusCode, equalTo(403));
         assertThat("Message if cannot create", message, equalTo("Email, password and name are required fields"));
@@ -88,6 +98,11 @@ public class CreateUserTest {
         ValidatableResponse createResponse = userClient.create(new User(userEmail, userPassword, "", accessToken));
         int statusCode = createResponse.extract().statusCode();
         String message = createResponse.extract().path("message");
+        if(statusCode == 200){
+            String accessTokenExtract = createResponse.extract().path("accessToken");
+            accessToken = accessTokenExtract.replace("Bearer ", "");
+            user.setAccessToken(accessToken);
+        }
 
         assertThat("User hasn't created", statusCode, equalTo(403));
         assertThat("Message if cannot create", message, equalTo("Email, password and name are required fields"));
